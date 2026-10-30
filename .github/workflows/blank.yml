@@ -12,7 +12,7 @@ jobs:
 
       - name: Unzip project
         run: |
-          ZIP=$(ls *.zip | head -n1)
+          ZIP=$(ls *.zip | sort -V | tail -n1)
           echo "Using $ZIP"
           unzip -o "$ZIP" -d project
           DIR=$(dirname "$(find project -name build.gradle | head -n1)")
