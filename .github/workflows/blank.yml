@@ -1,0 +1,39 @@
+name: build-from-zip
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          ZIP=$(ls *.zip | head -n1)
+          echo "Using $ZIP"
+          unzip -o "$ZIP" -d project
+          DIR=$(dirname "$(find project -name build.gradle | head -n1)")
+          echo "Project dir: $DIR"
+          echo "PROJECT_DIR=$DIR" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.12"
+
+      - name: Build
+        run: gradle build
+        working-directory: ${{ env.PROJECT_DIR }}
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: AutoMarket-jar
+          path: ${{ env.PROJECT_DIR }}/build/libs/*.jar
